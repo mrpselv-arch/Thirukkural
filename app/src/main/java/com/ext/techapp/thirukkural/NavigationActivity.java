@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.database.MatrixCursor;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,6 +24,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,9 +47,12 @@ import java.util.StringTokenizer;
 
 public class NavigationActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,ItemListFragment.OnListFragmentInteractionListener,
-        AboutFragment.OnFragmentInteractionListener {
+        AboutFragment.OnFragmentInteractionListener,SearchView.OnQueryTextListener {
 
     TextView aboutThirukkural;
+    NavigationView navigationView;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,13 +80,15 @@ public class NavigationActivity extends AppCompatActivity
 
 
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         Bundle bundle = getIntent().getExtras();
-        //Log.d("here.....",bundle+"");
         if(bundle!=null) {
             int itemId = bundle.getInt(ItemListFragment.NAV_ITEM_ID);
+            int resId = getResourceId("chapter_"+itemId,"id",getPackageName());
+            Log.d("navi bundle is:",resId+":"+itemId);
+
             //default item or previously selected item
             this.onNavigationItemSelected(navigationView.getMenu().getItem(itemId).setChecked(true));
            // navigationView. setCheckedItem(itemId);
@@ -96,6 +104,17 @@ public class NavigationActivity extends AppCompatActivity
         }
 
 
+    }
+
+
+    public  int getResourceId(String pVariableName, String pResourcename, String pPackageName)
+    {
+        try {
+            return getResources().getIdentifier(pVariableName, pResourcename, pPackageName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     @Override
@@ -128,8 +147,9 @@ public class NavigationActivity extends AppCompatActivity
         searchView.setSearchableInfo(
                 searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(true);
+       // searchView.setSubmitButtonEnabled(true);
        // Intent in= new Intent(this,SearchActivity.class);
-        //searchView.setOnQueryTextListener(this);
+        searchView.setOnQueryTextListener(this);
        // startActivity(in);
        // searchView.setSubmitButtonEnabled(true);
 
@@ -258,6 +278,7 @@ public class NavigationActivity extends AppCompatActivity
             Bundle bundle = new Bundle();
             bundle.putInt(AboutFragment.ABOUT_TEXT_ID, id);
             about.setArguments(bundle);
+            navigationView.getMenu().findItem(R.id.thiruvalluvar).setChecked(true);
             getSupportFragmentManager().beginTransaction().replace(R.id.item_list_fragment_layout,about).commit();
 
         }else {
@@ -271,6 +292,10 @@ public class NavigationActivity extends AppCompatActivity
 
             bundle.putString(ItemListFragment.NAV_ITEM_TITLE, item.getTitle().toString());
             listFragment.setArguments(bundle);
+
+            Log.d("befor fragment", bundle + ":"+id);
+            int chap_code = Integer.valueOf(chapter_code);
+            navigationView.getMenu().getItem(chap_code).setChecked(true);
             getSupportFragmentManager().beginTransaction().replace(R.id.item_list_fragment_layout, listFragment).commit();
         }
             DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -290,6 +315,19 @@ public class NavigationActivity extends AppCompatActivity
     @Override
     public void onFragmentInteraction(Uri uri) {
 
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+    Log.d("Hello...",newText);
+
+
+        return false;
     }
 
 }
